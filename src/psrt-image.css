@@ -1,0 +1,113 @@
+.psrt-image-root {
+  position: relative;
+  width: 100%;
+}
+
+.psrt-image-root .psrt-image-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #111;
+}
+
+.psrt-image-root .psrt-image-container--fixed-ref {
+  width: auto;
+  height: auto;
+  max-width: none;
+  flex-shrink: 0;
+}
+
+.psrt-image-root .psrt-image-container--fixed-ref.psrt-image-container--sizing .psrt-image-frame {
+  position: relative;
+  width: auto;
+  height: auto;
+  line-height: 0;
+}
+
+.psrt-image-root .psrt-image-container--fixed-ref.psrt-image-container--sizing .psrt-page-image {
+  width: auto;
+  height: auto;
+  max-width: none;
+  display: block;
+}
+
+.psrt-image-root .psrt-image-container--fixed-ref.psrt-image-container--sized .psrt-image-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.psrt-image-root .psrt-image-container--fixed-ref.psrt-image-container--sized .psrt-page-image {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+}
+
+.psrt-image-root .psrt-image-frame {
+  width: 100%;
+  line-height: 0;
+}
+
+.psrt-image-root .psrt-page-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.psrt-image-root .psrt-entries-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  container-type: size;
+  container-name: psrt-slide;
+}
+
+.psrt-image-root .psrt-text-block {
+  pointer-events: auto;
+  box-sizing: border-box;
+  line-height: 1.2;
+}
+
+.psrt-image-root .psrt-text-block .psrt-text-block__content {
+  margin: 0;
+  line-height: inherit;
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-width: 0;
+}
+
+.psrt-image-root .psrt-text-block .psrt-text-block__content strong {
+  font-weight: bolder;
+}
+
+.psrt-image-root .psrt-text-block .psrt-text-block__content em {
+  font-style: italic;
+}
+
+.psrt-image-root .psrt-text-block .psrt-text-block__content u {
+  text-decoration: underline;
+}
+
+.psrt-image-root .psrt-text-block .psrt-text-block__content s {
+  text-decoration: line-through;
+}
+
+.psrt-image-root--empty {
+  color: #a1a1aa;
+  font-size: 13px;
+  text-align: center;
+  padding: 24px;
+}
+
+.psrt-image-root--loading {
+  color: #a1a1aa;
+  font-size: 13px;
+  text-align: center;
+  padding: 24px;
+}
