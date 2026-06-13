@@ -98,6 +98,31 @@
   text-decoration: line-through;
 }
 
+.psrt-image-root .psrt-entries-overlay--visual-only .psrt-text-block,
+.psrt-image-root .psrt-entries-overlay--visual-only .psrt-mask-block {
+  pointer-events: none !important;
+}
+
+.psrt-image-root .psrt-mask-block {
+  box-sizing: border-box;
+  line-height: 1.2;
+}
+
+.psrt-image-root .psrt-interaction-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  container-type: size;
+  container-name: psrt-slide;
+  z-index: 2;
+}
+
+.psrt-image-root .psrt-interaction-overlay > * {
+  pointer-events: auto;
+}
+
 .psrt-image-root--empty {
   color: #a1a1aa;
   font-size: 13px;

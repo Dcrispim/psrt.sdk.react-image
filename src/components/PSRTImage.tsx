@@ -10,10 +10,15 @@ import { DEFAULT_FALLBACK_IMAGE } from '../document/constants.js'
 import { findPage, pageBackgroundColor, pageToEntries } from '../document/utils.js'
 import { usePageImageUrl } from '../hooks/usePageImageUrl.js'
 import { usePageStyles } from '../hooks/usePageStyles.js'
+import { applyBalloonIfNeeded } from '../layout/balloon.js'
 import { resolveEntryStyle } from '../layout/resolveLayout.js'
 import type { PSRTImageProps, RenderEntry } from '../types.js'
 import { PageBackgroundImage } from './PageBackgroundImage.js'
 import { TextBlock } from './TextBlock.js'
+
+function isMaskEntry(entry: RenderEntry): boolean {
+  return entry.maskHeight != null && entry.maskHeight >= 0.5
+}
 
 export function PSRTImage({
   psrt,
@@ -27,14 +32,19 @@ export function PSRTImage({
   showTexts = true,
   fixedReferenceSize = false,
   className,
+  consts: constsProp,
   onImageSize,
   onSelectBlock,
   imageContainerRef,
+  renderInteractionBlock,
+  interactionOverlayRef,
+  onInteractionOverlayPointerDown,
 }: PSRTImageProps) {
   const imageRef = useRef<HTMLImageElement>(null)
   const [refSize, setRefSize] = useState<{ w: number; h: number } | null>(null)
 
   const resolvedDoc = useMemo(() => resolveDocument(psrt), [psrt])
+  const docConsts = constsProp ?? resolvedDoc.consts
   const page = useMemo(() => findPage(resolvedDoc, pageName), [resolvedDoc, pageName])
 
   const entries = useMemo(
@@ -79,6 +89,9 @@ export function PSRTImage({
     metrics?.zoom ?? scale,
   )
 
+  const hasInteractionOverlay = Boolean(renderInteractionBlock)
+  const clickable = !hasInteractionOverlay && (enableEditor || Boolean(onSelectBlock))
+
   if (!page) {
     return <div className={`psrt-image-root psrt-image-root--empty ${className ?? ''}`.trim()}>Page not found</div>
   }
@@ -115,11 +128,16 @@ export function PSRTImage({
 
   const resolveStyles = (entry: RenderEntry) => {
     const resolved = resolveEntryStyle(entry, adaptedByIndex.get(entry.index), metrics)
+    let container = resolved.container
+    if (metrics) {
+      container = applyBalloonIfNeeded(entry, container, metrics)
+    }
     const editorExtra = applyEditorStyles?.(entry.index) ?? {}
     return {
-      container: { ...resolved.container, ...editorExtra },
+      container: { ...container, ...editorExtra },
       text: resolved.text,
       hasStroke: resolved.hasStroke,
+      hitArea: resolved.hitArea,
     }
   }
 
@@ -141,10 +159,30 @@ export function PSRTImage({
           />
         </div>
         {showEntries ? (
-          <div className="psrt-entries-overlay">
+          <div
+            className={[
+              'psrt-entries-overlay',
+              hasInteractionOverlay ? 'psrt-entries-overlay--visual-only' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          >
             {entries.map((entry) => {
+              if (isMaskEntry(entry)) {
+                const { container } = resolveStyles(entry)
+                return (
+                  <div
+                    key={`mask-${entry.index}`}
+                    className="psrt-mask-block"
+                    style={{
+                      ...container,
+                      pointerEvents: 'none',
+                    }}
+                  />
+                )
+              }
+
               const { container, text } = resolveStyles(entry)
-              const clickable = enableEditor || Boolean(onSelectBlock)
               return (
                 <TextBlock
                   key={`block-${entry.index}`}
@@ -155,11 +193,13 @@ export function PSRTImage({
                   }}
                   textStyle={text}
                   content={entry.text}
+                  consts={docConsts}
                   onClick={() => onSelectBlock?.(entry.index)}
                 />
               )
             })}
             {entries.map((entry) => {
+              if (isMaskEntry(entry)) return null
               const { container, text, hasStroke } = resolveStyles(entry)
               if (!hasStroke) return null
               return (
@@ -179,9 +219,27 @@ export function PSRTImage({
                     color: 'transparent',
                   }}
                   content={entry.text}
+                  consts={docConsts}
                 />
               )
             })}
+          </div>
+        ) : null}
+        {hasInteractionOverlay && showEntries ? (
+          <div
+            ref={interactionOverlayRef}
+            className="psrt-interaction-overlay"
+            onPointerDown={onInteractionOverlayPointerDown}
+          >
+            {entries.map((entry) =>
+              renderInteractionBlock?.({
+                entry,
+                adaptedStyles: adaptedByIndex.get(entry.index),
+                imageWidth: refSize?.w ?? 0,
+                imageHeight: refSize?.h ?? 0,
+                zoom: metrics?.zoom ?? scale,
+              }),
+            )}
           </div>
         ) : null}
       </div>

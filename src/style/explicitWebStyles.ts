@@ -35,6 +35,15 @@ const RAW_TO_ADAPTER_KEY: Record<string, string> = {
   sc: 'strokeColor',
 }
 
+const BLUR_DERIVED_ADAPTER_KEYS = new Set([
+  'backdropFilter',
+  'WebkitBackdropFilter',
+  'maskImage',
+  'WebkitMaskImage',
+  'maskSize',
+  'WebkitMaskSize',
+])
+
 function toKebab(key: string): string {
   return key.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '')
 }
@@ -56,13 +65,26 @@ function hasAlignInStyleRaw(styleRaw: string): boolean {
   return isDeclaredInStyleRaw('textAlign', styleRaw) || isDeclaredInStyleRaw('alignItems', styleRaw)
 }
 
+function hasBlurInStyleRaw(styleRaw: string): boolean {
+  if (isDeclaredInStyleRaw('blur', styleRaw)) return true
+  for (const side of ['blurLeft', 'blurRight', 'blurTop', 'blurBottom']) {
+    if (isDeclaredInStyleRaw(side, styleRaw)) return true
+  }
+  return false
+}
+
 export function pickExplicitAdapterCSS(props: CSSProperties, styleRaw: string): CSSProperties {
   const out: CSSProperties = {}
   const keepFlexLayout = hasAlignInStyleRaw(styleRaw)
+  const keepBlurDerived = hasBlurInStyleRaw(styleRaw)
   for (const [key, value] of Object.entries(props)) {
     if (value === undefined || value === null || value === '') continue
     if (ENTRY_LAYOUT_KEYS.has(key)) continue
     if (keepFlexLayout && (FLEX_LAYOUT_KEYS.has(key) || SPAN_ALIGN_LAYOUT_KEYS.has(key))) {
+      ;(out as Record<string, unknown>)[key] = value
+      continue
+    }
+    if (keepBlurDerived && BLUR_DERIVED_ADAPTER_KEYS.has(key)) {
       ;(out as Record<string, unknown>)[key] = value
       continue
     }

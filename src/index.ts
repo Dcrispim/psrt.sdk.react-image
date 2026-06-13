@@ -2,5 +2,19 @@ import './psrt-image.css'
 
 export { PSRTImage, type PSRTImageProps } from './components/PSRTImage.js'
 export { usePsrtDocument } from './hooks/usePsrtDocument.js'
+export { usePageStyles } from './hooks/usePageStyles.js'
+export { resolveEntryStyle } from './layout/resolveLayout.js'
+export { estimateTextBoxHeightPct } from './layout/geometry.js'
 export { DEFAULT_FALLBACK_IMAGE } from './document/constants.js'
-export type { Document, Page, PsrtDocument, PsrtPage, PsrtText, TextBlock } from '@psrt/sdk'
+export { pageToEntries, findPage } from './document/utils.js'
+export type { AdaptedWebStyles } from './layout/styleAdapter.js'
+export type {
+  Document,
+  Page,
+  PsrtDocument,
+  PsrtPage,
+  PsrtText,
+  TextBlock,
+  RenderEntry,
+  InteractionBlockRenderProps,
+} from './types.js'

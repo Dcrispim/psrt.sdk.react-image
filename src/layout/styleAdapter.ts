@@ -8,6 +8,7 @@ export type AdaptedWebStyles = {
   text: CSSProperties
   hasStroke: boolean
   merged?: CSSProperties
+  hitArea?: CSSProperties
 }
 
 function mapToCSSProperties(m: Record<string, string> | undefined): CSSProperties {
