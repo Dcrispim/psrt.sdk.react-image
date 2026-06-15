@@ -1,5 +1,5 @@
 import type { CSSProperties, PointerEvent, ReactNode, Ref } from 'react'
-import type { PsrtDocument } from '@psrt/sdk'
+import type { AssetRegistry, PsrtDocument } from '@psrt/sdk'
 import type { AdaptedWebStyles } from './layout/styleAdapter.js'
 
 export type { Document, Page, PsrtDocument, PsrtMask, PsrtPage, PsrtStyle, PsrtText, TextBlock } from '@psrt/sdk'
@@ -17,9 +17,13 @@ export interface PSRTImageProps {
   pageName: string
   scale?: number
   applyEditorStyles?: (blockId: string | number) => CSSProperties
+  /** Alias for applyEditorStyles (editor selection overlays). */
+  getEditorStyles?: (blockId: string | number) => CSSProperties
   enableEditor?: boolean
   fallbackImage?: string
   resolveAssetUrl?: (url: string) => Promise<string>
+  /** Embedded assets from $SOURCE; used when resolveAssetUrl is not provided. */
+  assetRegistry?: AssetRegistry
   getBlockContent?: (index: number, fallback: string) => string
   showTexts?: boolean
   fixedReferenceSize?: boolean

@@ -63,6 +63,20 @@ function svgToDataUrl(svg: React.ReactElement): string {
   return `data:image/svg+xml,${encodeURIComponent(svgString)}`
 }
 
+const balloonImageCache = new Map<string, string>()
+const BALLOON_CACHE_MAX = 256
+
+function balloonImageKey(
+  index: number,
+  w: number,
+  h: number,
+  stroke: number,
+  color: string,
+  borderColor: string,
+): string {
+  return `${index}|${w}|${h}|${stroke}|${color}|${borderColor}`
+}
+
 export function applyBalloonIfNeeded(
   entry: RenderEntry,
   container: CSSProperties,
@@ -82,15 +96,28 @@ export function applyBalloonIfNeeded(
     ? (Number(style.height) / 100) * refHeight * zoom
     : blockWidthPx
 
-  const svgDataUrl = svgToDataUrl(
-    React.createElement(SpechBaloonSvg, {
-      stroke: Number.parseFloat(String(style.borderWidth ?? '0')),
-      w: blockWidthPx,
-      h: balloonH,
-      color: String(style.backgroundColor ?? '#fff'),
-      borderColor: String(style.borderColor ?? '#000'),
-    }),
-  )
+  const stroke = Number.parseFloat(String(style.borderWidth ?? '0'))
+  const color = String(style.backgroundColor ?? '#fff')
+  const borderColor = String(style.borderColor ?? '#000')
+  const cacheKey = balloonImageKey(entry.index, blockWidthPx, balloonH, stroke, color, borderColor)
+
+  let svgDataUrl = balloonImageCache.get(cacheKey)
+  if (!svgDataUrl) {
+    svgDataUrl = svgToDataUrl(
+      React.createElement(SpechBaloonSvg, {
+        stroke,
+        w: blockWidthPx,
+        h: balloonH,
+        color,
+        borderColor,
+      }),
+    )
+    balloonImageCache.set(cacheKey, svgDataUrl)
+    if (balloonImageCache.size > BALLOON_CACHE_MAX) {
+      const oldest = balloonImageCache.keys().next().value
+      if (oldest) balloonImageCache.delete(oldest)
+    }
+  }
 
   return {
     ...container,

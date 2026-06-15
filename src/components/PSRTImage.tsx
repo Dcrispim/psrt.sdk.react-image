@@ -1,12 +1,15 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
   type CSSProperties,
+  type Ref,
 } from 'react'
-import { resolveDocument } from '@psrt/sdk'
+import { resolveDocument, resolveAssetUrl as sdkResolveAssetUrl } from '@psrt/sdk'
 import { DEFAULT_FALLBACK_IMAGE } from '../document/constants.js'
+import { useResolvedDocument } from '../document/resolveCache.js'
 import { findPage, pageBackgroundColor, pageToEntries } from '../document/utils.js'
 import { usePageImageUrl } from '../hooks/usePageImageUrl.js'
 import { usePageStyles } from '../hooks/usePageStyles.js'
@@ -20,14 +23,22 @@ function isMaskEntry(entry: RenderEntry): boolean {
   return entry.maskHeight != null && entry.maskHeight >= 0.5
 }
 
+function assignRef<T>(ref: Ref<T> | undefined, value: T) {
+  if (!ref) return
+  if (typeof ref === 'function') ref(value)
+  else ref.current = value
+}
+
 export function PSRTImage({
   psrt,
   pageName,
   scale = 1,
   applyEditorStyles,
+  getEditorStyles,
   enableEditor = false,
   fallbackImage = DEFAULT_FALLBACK_IMAGE,
-  resolveAssetUrl,
+  resolveAssetUrl: resolveAssetUrlProp,
+  assetRegistry,
   getBlockContent,
   showTexts = true,
   fixedReferenceSize = false,
@@ -41,16 +52,34 @@ export function PSRTImage({
   onInteractionOverlayPointerDown,
 }: PSRTImageProps) {
   const imageRef = useRef<HTMLImageElement>(null)
+  const containerElRef = useRef<HTMLDivElement | null>(null)
   const [refSize, setRefSize] = useState<{ w: number; h: number } | null>(null)
+  const [layoutSize, setLayoutSize] = useState<{ w: number; h: number } | null>(null)
 
-  const resolvedDoc = useMemo(() => resolveDocument(psrt), [psrt])
+  const assignContainerRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      containerElRef.current = el
+      assignRef(imageContainerRef, el)
+    },
+    [imageContainerRef],
+  )
+
+  const resolvedDoc = useResolvedDocument(psrt)
   const docConsts = constsProp ?? resolvedDoc.consts
   const page = useMemo(() => findPage(resolvedDoc, pageName), [resolvedDoc, pageName])
+  const editorStyles = getEditorStyles ?? applyEditorStyles
 
   const entries = useMemo(
     () => (page ? pageToEntries(page, getBlockContent) : []),
     [page, getBlockContent],
   )
+
+  const resolveAssetUrl = useMemo(() => {
+    if (resolveAssetUrlProp) return resolveAssetUrlProp
+    if (!assetRegistry) return undefined
+    return (url: string) =>
+      sdkResolveAssetUrl(url, { registry: assetRegistry, consts: docConsts })
+  }, [resolveAssetUrlProp, assetRegistry, docConsts])
 
   const { src: imageSrc, loading: imageLoading } = usePageImageUrl(
     page?.imageUrl,
@@ -60,7 +89,34 @@ export function PSRTImage({
 
   useEffect(() => {
     setRefSize(null)
+    setLayoutSize(null)
   }, [page?.imageUrl, imageSrc])
+
+  useEffect(() => {
+    if (fixedReferenceSize) return
+    const el = containerElRef.current
+    if (!el) return
+
+    let frame = 0
+    const measure = () => {
+      const w = el.clientWidth
+      const h = el.clientHeight
+      if (w >= 1 && h >= 1) {
+        setLayoutSize((prev) => (prev?.w === w && prev?.h === h ? prev : { w, h }))
+      }
+    }
+
+    measure()
+    const ro = new ResizeObserver(() => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(measure)
+    })
+    ro.observe(el)
+    return () => {
+      cancelAnimationFrame(frame)
+      ro.disconnect()
+    }
+  }, [fixedReferenceSize, page?.imageUrl, imageSrc, refSize])
 
   const syncRefSize = () => {
     const img = imageRef.current
@@ -75,12 +131,13 @@ export function PSRTImage({
     if (img?.complete && img.naturalWidth > 0) syncRefSize()
   }, [imageSrc])
 
-  const metrics =
-    refSize && fixedReferenceSize
+  const metrics = fixedReferenceSize
+    ? refSize
       ? { refWidth: refSize.w, refHeight: refSize.h, zoom: scale }
-      : refSize
-        ? { refWidth: refSize.w, refHeight: refSize.h, zoom: 1 }
-        : undefined
+      : undefined
+    : layoutSize
+      ? { refWidth: layoutSize.w, refHeight: layoutSize.h, zoom: 1 }
+      : undefined
 
   const adaptedByIndex = usePageStyles(
     entries,
@@ -124,7 +181,8 @@ export function PSRTImage({
     .join(' ')
 
   const showEntries =
-    showTexts && (fixedReferenceSize ? refSize !== null : true)
+    showTexts &&
+    (fixedReferenceSize ? refSize !== null : layoutSize !== null)
 
   const resolveStyles = (entry: RenderEntry) => {
     const resolved = resolveEntryStyle(entry, adaptedByIndex.get(entry.index), metrics)
@@ -132,7 +190,7 @@ export function PSRTImage({
     if (metrics) {
       container = applyBalloonIfNeeded(entry, container, metrics)
     }
-    const editorExtra = applyEditorStyles?.(entry.index) ?? {}
+    const editorExtra = editorStyles?.(entry.index) ?? {}
     return {
       container: { ...container, ...editorExtra },
       text: resolved.text,
@@ -145,7 +203,7 @@ export function PSRTImage({
 
   return (
     <div className={rootClass}>
-      <div ref={imageContainerRef} className={containerClass} style={containerStyle}>
+      <div ref={assignContainerRef} className={containerClass} style={containerStyle}>
         <div className="psrt-image-frame">
           <PageBackgroundImage
             ref={imageRef}

@@ -2,6 +2,7 @@ import './psrt-image.css'
 
 export { PSRTImage, type PSRTImageProps } from './components/PSRTImage.js'
 export { usePsrtDocument } from './hooks/usePsrtDocument.js'
+export { usePSRT, type UsePSRTOptions } from './hooks/usePSRT.js'
 export { usePageStyles } from './hooks/usePageStyles.js'
 export { resolveEntryStyle } from './layout/resolveLayout.js'
 export { estimateTextBoxHeightPct } from './layout/geometry.js'
