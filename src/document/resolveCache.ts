@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useRef } from 'react'
 import { resolveDocument, type PsrtDocument, type PsrtPage } from '@psrt/sdk'
 
 /** Key for resolveDocument — excludes block x/y and layout dimensions (overlay only). */
@@ -64,8 +64,15 @@ function overlayPageLayout(resolved: PsrtPage, live: PsrtPage): PsrtPage {
     })
   }
 
-  if (texts === resolved.texts && masks === resolved.masks) return resolved
-  return { ...resolved, texts, masks }
+  const imageUrl = live.imageUrl ?? resolved.imageUrl
+  if (
+    imageUrl === resolved.imageUrl &&
+    texts === resolved.texts &&
+    masks === resolved.masks
+  ) {
+    return resolved
+  }
+  return { ...resolved, imageUrl, texts, masks }
 }
 
 export function overlayBlockLayout(resolved: PsrtDocument, live: PsrtDocument): PsrtDocument {
@@ -84,15 +91,14 @@ export function overlayBlockLayout(resolved: PsrtDocument, live: PsrtDocument): 
 
 export function useResolvedDocument(psrt: PsrtDocument): PsrtDocument {
   const cacheRef = useRef<{ key: string; resolved: PsrtDocument } | null>(null)
+  const key = documentStructuralKey(psrt)
+  const cached = cacheRef.current
 
-  return useMemo(() => {
-    const key = documentStructuralKey(psrt)
-    const cached = cacheRef.current
-    if (cached?.key === key) {
-      return overlayBlockLayout(cached.resolved, psrt)
-    }
-    const resolved = resolveDocument(psrt)
-    cacheRef.current = { key, resolved }
-    return overlayBlockLayout(resolved, psrt)
-  }, [psrt])
+  if (cached?.key === key) {
+    return overlayBlockLayout(cached.resolved, psrt)
+  }
+
+  const resolved = resolveDocument(psrt)
+  cacheRef.current = { key, resolved }
+  return overlayBlockLayout(resolved, psrt)
 }
