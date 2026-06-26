@@ -18,6 +18,12 @@ export function documentStructuralKey(doc: PsrtDocument): string {
       st: m.style,
       ir: m.imageRef,
     })),
+    pm: (p.pathMasks ?? []).map((pm) => ({
+      i: pm.index,
+      st: pm.style,
+      ir: pm.imageRef,
+      pa: pm.path,
+    })),
   }))
   return JSON.stringify({
     co: doc.consts,
@@ -29,6 +35,7 @@ export function documentStructuralKey(doc: PsrtDocument): string {
 function overlayPageLayout(resolved: PsrtPage, live: PsrtPage): PsrtPage {
   const liveTexts = new Map((live.texts ?? []).map((t) => [t.index, t]))
   const liveMasks = new Map((live.masks ?? []).map((m) => [m.index, m]))
+  const livePathMasks = new Map((live.pathMasks ?? []).map((pm) => [pm.index, pm]))
 
   let texts = resolved.texts ?? []
   if (texts.length > 0) {
@@ -64,15 +71,33 @@ function overlayPageLayout(resolved: PsrtPage, live: PsrtPage): PsrtPage {
     })
   }
 
+  let pathMasks = resolved.pathMasks
+  if (pathMasks && pathMasks.length > 0) {
+    pathMasks = pathMasks.map((rpm) => {
+      const lpm = livePathMasks.get(rpm.index)
+      if (!lpm) return rpm
+      if (
+        rpm.x === lpm.x &&
+        rpm.y === lpm.y &&
+        rpm.width === lpm.width &&
+        rpm.height === lpm.height
+      ) {
+        return rpm
+      }
+      return { ...rpm, x: lpm.x, y: lpm.y, width: lpm.width, height: lpm.height }
+    })
+  }
+
   const imageUrl = live.imageUrl ?? resolved.imageUrl
   if (
     imageUrl === resolved.imageUrl &&
     texts === resolved.texts &&
-    masks === resolved.masks
+    masks === resolved.masks &&
+    pathMasks === resolved.pathMasks
   ) {
     return resolved
   }
-  return { ...resolved, imageUrl, texts, masks }
+  return { ...resolved, imageUrl, texts, masks, pathMasks }
 }
 
 export function overlayBlockLayout(resolved: PsrtDocument, live: PsrtDocument): PsrtDocument {

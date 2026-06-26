@@ -17,10 +17,15 @@ import { applyBalloonIfNeeded } from '../layout/balloon.js'
 import { resolveEntryStyle } from '../layout/resolveLayout.js'
 import type { PSRTImageProps, RenderEntry } from '../types.js'
 import { PageBackgroundImage } from './PageBackgroundImage.js'
+import { PathMaskBlock } from './PathMaskBlock.js'
 import { TextBlock } from './TextBlock.js'
 
 function isMaskEntry(entry: RenderEntry): boolean {
   return entry.maskHeight != null && entry.maskHeight >= 0.5
+}
+
+function isPathMaskEntry(entry: RenderEntry): boolean {
+  return entry.pathMask != null
 }
 
 function assignRef<T>(ref: Ref<T> | undefined, value: T) {
@@ -226,6 +231,21 @@ export function PSRTImage({
               .join(' ')}
           >
             {entries.map((entry) => {
+              if (isPathMaskEntry(entry)) {
+                return (
+                  <PathMaskBlock
+                    key={`pathmask-${entry.index}`}
+                    pathMask={entry.pathMask!}
+                    pageName={pageName}
+                    canvasW={metrics?.refWidth ?? 0}
+                    canvasH={metrics?.refHeight ?? 0}
+                    zoom={metrics?.zoom ?? scale}
+                    resolveAssetUrl={resolveAssetUrl}
+                    editorExtra={editorStyles?.(entry.index)}
+                  />
+                )
+              }
+
               if (isMaskEntry(entry)) {
                 const { container } = resolveStyles(entry)
                 return (
@@ -257,7 +277,7 @@ export function PSRTImage({
               )
             })}
             {entries.map((entry) => {
-              if (isMaskEntry(entry)) return null
+              if (isMaskEntry(entry) || isPathMaskEntry(entry)) return null
               const { container, text, hasStroke } = resolveStyles(entry)
               if (!hasStroke) return null
               return (
