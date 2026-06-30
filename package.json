@@ -1,6 +1,6 @@
 {
   "name": "@psrt/react-image",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "PSRT page renderer for React — percent layout, WASM styleadapter",
   "type": "module",
   "sideEffects": [
