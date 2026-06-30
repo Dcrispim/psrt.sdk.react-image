@@ -1,8 +1,8 @@
 import type { CSSProperties, PointerEvent, ReactNode, Ref } from 'react'
-import type { AssetRegistry, PsrtDocument, PsrtPathMask } from '@psrt/sdk'
+import type { AssetRegistry, InteractiveConst, PsrtDocument, PsrtPathMask } from '@psrt/sdk'
 import type { AdaptedWebStyles } from './layout/styleAdapter.js'
 
-export type { Document, Page, PsrtDocument, PsrtMask, PsrtPage, PsrtPathMask, PsrtStyle, PsrtText, TextBlock } from '@psrt/sdk'
+export type { Document, InteractiveConst, Page, PsrtDocument, PsrtMask, PsrtPage, PsrtPathMask, PsrtStyle, PsrtText, TextBlock } from '@psrt/sdk'
 
 export interface InteractionBlockRenderProps {
   entry: RenderEntry
@@ -29,6 +29,8 @@ export interface PSRTImageProps {
   fixedReferenceSize?: boolean
   className?: string
   consts?: Record<string, string>
+  /** Interactive consts override; defaults to the document's iConst map. */
+  iConst?: Record<string, InteractiveConst>
   onImageSize?: (size: { w: number; h: number }) => void
   onSelectBlock?: (index: number) => void
   imageContainerRef?: Ref<HTMLDivElement>

@@ -136,3 +136,100 @@
   text-align: center;
   padding: 24px;
 }
+
+/* Interactive consts (@type:render@) */
+.psrt-iconst {
+  cursor: pointer;
+}
+
+.psrt-iconst--link {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  pointer-events: auto;
+}
+
+.psrt-iconst--desc {
+  position: relative;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  pointer-events: auto;
+}
+
+.psrt-iconst-card {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  min-width: 160px;
+  max-width: 260px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #18181b;
+  color: #fafafa;
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: normal;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.psrt-iconst-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.psrt-iconst-modal__box {
+  max-width: 380px;
+  margin: 16px;
+  padding: 20px;
+  border-radius: 12px;
+  background: #fff;
+  color: #18181b;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.psrt-iconst-modal__text {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.psrt-iconst-modal__url {
+  display: block;
+  margin-bottom: 16px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #f4f4f5;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.psrt-iconst-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.psrt-iconst-modal__actions button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #d4d4d8;
+  background: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.psrt-iconst-modal__confirm {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+}
