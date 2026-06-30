@@ -62,3 +62,29 @@ const document = parse(psrtString)
 | `applyEditorStyles` | Optional UI overlay styles per block |
 | `enableEditor` | Editor interaction mode |
 | `fallbackImage` | Placeholder when image missing/invalid |
+
+## Storybook
+
+An interactive playground lives in `.storybook/` and `src/stories/`. It boots the
+PSRT WASM runtime once (via a preview loader, mirroring `initPsrt()` in psrt.web)
+and renders `PSRTImage` in two modes that mirror the app:
+
+- **Reader** — scrollable page with toggleable captions (like `ReaderApp`).
+- **Editor** — fixed reference size, zoom (`scale`), selectable blocks with a
+  selection overlay (like the `WebPreview` canvas).
+- **LiveMode** — a self-contained live editor where the image URL, each block's
+  text, position (`x`/`y`/`width`/`size`) and style JSON are editable, with the
+  PSRTImage re-rendering on every change.
+
+The controls mirror the real use cases: upload a **`.psrt` file** to test the
+page (empty falls back to the bundled sample) and pick the **selected page**
+(`$START <name>`; multi-page documents also get a page selector in the canvas).
+
+```bash
+npm install
+npm run storybook       # dev server on http://localhost:6007
+npm run build-storybook # static build into storybook-static/
+```
+
+> Requires Node 20.x. The sample documents in `src/stories/fixtures.ts` use
+> remote image/font URLs, so no asset registry or local connector is needed.

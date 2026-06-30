@@ -14,7 +14,20 @@ function Modal({ children, onClose }: { children: ReactNode; onClose: () => void
   )
 }
 
-/** `@link:` — clickable label that confirms before opening an external URL. 
+/** Parse + normalize an external URL, returning null if it is unsafe to open.
+ * Allows only http(s), rejects embedded credentials (phishing vector). */
+function sanitizeUrl(url: string): string | null {
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null
+    if (parsed.username || parsed.password) return null
+    return parsed.toString()
+  } catch {
+    return null
+  }
+}
+
+/** `@link:` — clickable label that confirms before opening an external URL.
  
 * 
 ~~~
@@ -31,6 +44,8 @@ function Modal({ children, onClose }: { children: ReactNode; onClose: () => void
 */
 function LinkConst({ render, value }: { render: string; value: string }) {
   const [open, setOpen] = useState(false)
+  const safeUrl = sanitizeUrl(value)
+  const isInsecure = safeUrl != null && safeUrl.startsWith('http:')
   return (
     <>
       <button type="button" className="psrt-iconst psrt-iconst--link" onClick={() => setOpen(true)}>
@@ -38,22 +53,38 @@ function LinkConst({ render, value }: { render: string; value: string }) {
       </button>
       {open ? (
         <Modal onClose={() => setOpen(false)}>
-          <p className="psrt-iconst-modal__text">Você está saindo para um link externo:</p>
-          <code className="psrt-iconst-modal__url">{value}</code>
+          {safeUrl ? (
+            <>
+              <p className="psrt-iconst-modal__text">Você está saindo para um link externo:</p>
+              {isInsecure ? (
+                <p className="psrt-iconst-modal__badge" role="alert">
+                  <span className="psrt-iconst-modal__badge-icon" aria-hidden="true">
+                    ⚠
+                  </span>
+                  Não seguro — conexão sem criptografia (HTTP)
+                </p>
+              ) : null}
+              <code className="psrt-iconst-modal__url">{safeUrl}</code>
+            </>
+          ) : (
+            <p className="psrt-iconst-modal__text">Este link não pôde ser aberto por não ser seguro.</p>
+          )}
           <div className="psrt-iconst-modal__actions">
             <button type="button" className="psrt-iconst-modal__cancel" onClick={() => setOpen(false)}>
-              Cancelar
+              {safeUrl ? 'Cancelar' : 'Fechar'}
             </button>
-            <button
-              type="button"
-              className="psrt-iconst-modal__confirm"
-              onClick={() => {
-                window.open(value, '_blank', 'noopener,noreferrer')
-                setOpen(false)
-              }}
-            >
-              Abrir link
-            </button>
+            {safeUrl ? (
+              <button
+                type="button"
+                className="psrt-iconst-modal__confirm"
+                onClick={() => {
+                  window.open(safeUrl, '_blank', 'noopener,noreferrer')
+                  setOpen(false)
+                }}
+              >
+                Abrir link
+              </button>
+            ) : null}
           </div>
         </Modal>
       ) : null}

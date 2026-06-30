@@ -203,6 +203,25 @@
   font-size: 14px;
 }
 
+.psrt-iconst-modal__badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #fca5a5;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.psrt-iconst-modal__badge-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
 .psrt-iconst-modal__url {
   display: block;
   margin-bottom: 16px;
@@ -228,7 +247,7 @@
   cursor: pointer;
 }
 
-.psrt-iconst-modal__confirm {
+.psrt-iconst-modal__actions .psrt-iconst-modal__confirm {
   border-color: #2563eb;
   background: #2563eb;
   color: #fff;
