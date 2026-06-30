@@ -34,7 +34,7 @@
     "react-dom": ">=18"
   },
   "dependencies": {
-    "@psrt/sdk": "^0.1.4"
+    "@psrt/sdk": "^0.3.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

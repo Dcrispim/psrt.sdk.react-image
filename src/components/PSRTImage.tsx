@@ -44,6 +44,7 @@ export function PSRTImage({
   fixedReferenceSize = false,
   className,
   consts: constsProp,
+  iConst: iConstProp,
   onImageSize,
   onSelectBlock,
   imageContainerRef,
@@ -66,6 +67,7 @@ export function PSRTImage({
 
   const resolvedDoc = useResolvedDocument(psrt)
   const docConsts = constsProp ?? resolvedDoc.consts
+  const docIConst = iConstProp ?? resolvedDoc.iConst
   const page = useMemo(() => findPage(resolvedDoc, pageName), [resolvedDoc, pageName])
   const editorStyles = getEditorStyles ?? applyEditorStyles
 
@@ -252,6 +254,7 @@ export function PSRTImage({
                   textStyle={text}
                   content={entry.text}
                   consts={docConsts}
+                  iConst={docIConst}
                   onClick={() => onSelectBlock?.(entry.index)}
                 />
               )
@@ -278,6 +281,8 @@ export function PSRTImage({
                   }}
                   content={entry.text}
                   consts={docConsts}
+                  iConst={docIConst}
+                  interactive={false}
                 />
               )
             })}
