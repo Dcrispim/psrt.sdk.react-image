@@ -1,8 +1,8 @@
 import type { CSSProperties, PointerEvent, ReactNode, Ref } from 'react'
-import type { AssetRegistry, InteractiveConst, PsrtDocument } from '@psrt/sdk'
+import type { AssetRegistry, InteractiveConst, PsrtDocument, PsrtPathMask } from '@psrt/sdk'
 import type { AdaptedWebStyles } from './layout/styleAdapter.js'
 
-export type { Document, InteractiveConst, Page, PsrtDocument, PsrtMask, PsrtPage, PsrtStyle, PsrtText, TextBlock } from '@psrt/sdk'
+export type { Document, InteractiveConst, Page, PsrtDocument, PsrtMask, PsrtPage, PsrtPathMask, PsrtStyle, PsrtText, TextBlock } from '@psrt/sdk'
 
 export interface InteractionBlockRenderProps {
   entry: RenderEntry
@@ -49,4 +49,6 @@ export interface RenderEntry {
   text: string
   styleRaw: string
   maskHeight?: number
+  /** Present only for `~~` path mask entries; carries the raw block for adaptPathMaskWeb. */
+  pathMask?: PsrtPathMask
 }

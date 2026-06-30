@@ -38,6 +38,20 @@ export function pageToEntries(page: PsrtPage, getBlockContent?: (index: number, 
     })
   }
 
+  for (const pm of page.pathMasks ?? []) {
+    entries.push({
+      index: pm.index,
+      x: pm.x,
+      y: pm.y,
+      width: pm.width,
+      size: 0,
+      maskHeight: pm.height,
+      text: '',
+      styleRaw: styleToRaw(pm.style),
+      pathMask: pm,
+    })
+  }
+
   entries.sort((a, b) => a.index - b.index)
   return entries
 }
