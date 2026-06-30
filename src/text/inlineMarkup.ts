@@ -1,13 +1,14 @@
 /** Mirrors psrt.RenderInlineHTML */
 
-type InlineDelim = { open: string; close: string; tagOpen: string; tagClose: string }
+export type InlineDelim = { open: string; close: string; tags: string[] }
 
-const DELIMS: InlineDelim[] = [
-  { open: '***', close: '***', tagOpen: '<strong><em>', tagClose: '</em></strong>' },
-  { open: '**', close: '**', tagOpen: '<strong>', tagClose: '</strong>' },
-  { open: '*', close: '*', tagOpen: '<em>', tagClose: '</em>' },
-  { open: '_', close: '_', tagOpen: '<u>', tagClose: '</u>' },
-  { open: '~', close: '~', tagOpen: '<s>', tagClose: '</s>' },
+/** Shared markup table (outermost→innermost tags); used by both the HTML and React renderers. */
+export const DELIMS: InlineDelim[] = [
+  { open: '***', close: '***', tags: ['strong', 'em'] },
+  { open: '**', close: '**', tags: ['strong'] },
+  { open: '*', close: '*', tags: ['em'] },
+  { open: '_', close: '_', tags: ['u'] },
+  { open: '~', close: '~', tags: ['s'] },
 ]
 
 function escapeHtml(s: string): string {
@@ -33,7 +34,9 @@ function renderSegment(s: string): string {
       const innerStart = i + d.open.length
       const closeAt = s.indexOf(d.close, innerStart)
       if (closeAt <= innerStart) continue
-      out += d.tagOpen + renderSegment(s.slice(innerStart, closeAt)) + d.tagClose
+      const open = d.tags.map((t) => `<${t}>`).join('')
+      const close = d.tags.map((t) => `</${t}>`).reverse().join('')
+      out += open + renderSegment(s.slice(innerStart, closeAt)) + close
       i = closeAt + d.close.length
       matched = true
       break
