@@ -155,6 +155,7 @@ export function PSRTImage({
 
   const hasInteractionOverlay = Boolean(renderInteractionBlock)
   const clickable = !hasInteractionOverlay && (enableEditor || Boolean(onSelectBlock))
+  const hasInteractive = Boolean(docIConst && Object.keys(docIConst).length > 0)
 
   if (!page) {
     return <div className={`psrt-image-root psrt-image-root--empty ${className ?? ''}`.trim()}>Page not found</div>
@@ -269,7 +270,7 @@ export function PSRTImage({
                   containerStyle={{
                     ...container,
                     cursor: clickable ? 'pointer' : undefined,
-                    pointerEvents: clickable ? 'auto' : 'none',
+                    pointerEvents: (clickable || hasInteractive) ? 'auto' : 'none',
                   }}
                   textStyle={text}
                   content={entry.text}
