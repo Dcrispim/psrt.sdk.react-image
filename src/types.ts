@@ -38,6 +38,7 @@ export interface PSRTImageProps {
   renderInteractionBlock?: (props: InteractionBlockRenderProps) => ReactNode
   interactionOverlayRef?: Ref<HTMLDivElement>
   onInteractionOverlayPointerDown?: (e: PointerEvent<HTMLDivElement>) => void
+  pointerEvents?: 'auto' | 'none' | 'all'
 }
 
 export interface RenderEntry {
