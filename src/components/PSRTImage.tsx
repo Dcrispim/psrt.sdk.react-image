@@ -56,6 +56,7 @@ export function PSRTImage({
   renderInteractionBlock,
   interactionOverlayRef,
   onInteractionOverlayPointerDown,
+  pointerEvents = 'auto',
 }: PSRTImageProps) {
   const imageRef = useRef<HTMLImageElement>(null)
   const containerElRef = useRef<HTMLDivElement | null>(null)
@@ -154,7 +155,7 @@ export function PSRTImage({
   )
 
   const hasInteractionOverlay = Boolean(renderInteractionBlock)
-  const clickable = !hasInteractionOverlay && (enableEditor || Boolean(onSelectBlock))
+  const clickable = pointerEvents === 'auto' ? !hasInteractionOverlay && (enableEditor || Boolean(onSelectBlock)) : pointerEvents === 'none' ? false : true;
   const hasInteractive = Boolean(docIConst && Object.keys(docIConst).length > 0)
 
   if (!page) {

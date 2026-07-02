@@ -1,6 +1,14 @@
 .psrt-image-root {
   position: relative;
   width: 100%;
+  /* Isolate from the host page's typography. Every reader/embedder ships its own
+     body font (editor chrome, reader UI, etc.); none of it may leak into the
+     rendered page — all styling here must come from the .psrt document itself. */
+  font: initial;
+  color: initial;
+  text-align: initial;
+  letter-spacing: initial;
+  white-space: initial;
 }
 
 .psrt-image-root .psrt-image-container {
