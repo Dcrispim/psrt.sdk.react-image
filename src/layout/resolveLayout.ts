@@ -3,6 +3,7 @@ import { pickExplicitAdapterCSS, isDeclaredInStyleRaw } from '../style/explicitW
 import { isPresentStyleValue } from '../style/styleValue.js'
 import { estimateTextBoxHeightPct, textFontSizePx } from './geometry.js'
 import { applyBackdropGlassFix } from './backdropGlass.js'
+import { isGradientValue } from './colorGradient.js'
 import type { AdaptedWebStyles } from './styleAdapter.js'
 import type { RenderEntry } from '../types.js'
 
@@ -15,6 +16,19 @@ function adapterContainerCSS(container: CSSProperties | undefined): CSSPropertie
     if (s !== '' && isPresentStyleValue(k, s)) out[k] = s
   }
   return out as CSSProperties
+}
+
+/**
+ * O styleadapter do psrt.core (Go/WASM) sempre emite o valor de "background"
+ * cru em `backgroundColor` — válido pra cor sólida, mas `backgroundColor`
+ * não aceita gradiente (só `background`). Sem isso, um valor de background
+ * em gradiente é silenciosamente descartado pelo navegador.
+ */
+function fixGradientBackground(style: CSSProperties): CSSProperties {
+  const bg = (style as Record<string, unknown>).backgroundColor
+  if (typeof bg !== 'string' || !isGradientValue(bg)) return style
+  const { backgroundColor: _backgroundColor, ...rest } = style as Record<string, unknown>
+  return { ...rest, background: bg } as CSSProperties
 }
 
 const empty = (): AdaptedWebStyles => ({
@@ -32,9 +46,11 @@ export function resolveEntryStyle(
   const styleRaw = entry.styleRaw
   const isMask = entry.maskHeight != null && entry.maskHeight >= 0.5
 
-  const boxStyle = isMask
-    ? pickExplicitAdapterCSS(base.container, styleRaw)
-    : adapterContainerCSS(base.container)
+  const boxStyle = fixGradientBackground(
+    isMask
+      ? pickExplicitAdapterCSS(base.container, styleRaw)
+      : adapterContainerCSS(base.container),
+  )
   const textStyle = pickExplicitAdapterCSS(base.text, styleRaw)
 
   const fontPx =
